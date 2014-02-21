@@ -1,8 +1,24 @@
 
         b-combo-box ul {
             display: none;
+            max-width: 200px;
+            border: 1px solid #000;
+            margin: 0;
+            padding: 0;
         }
         b-combo-box ul[visible] {
           display: block;
+        }
+        b-combo-box li {
+            list-style-type: none;
+        }
+        b-combo-box li:hover {
+            background-color: #ddd;
+        }
+        b-combo-box .b-selectable-selected {
+            background-color: #ccc;
+        }
+        b-selectable:focus {
+            outline: none;
         }
     

@@ -2,9 +2,25 @@
     <style>
         b-combo-box ul {
             display: none;
+            max-width: 200px;
+            border: 1px solid #000;
+            margin: 0;
+            padding: 0;
         }
         b-combo-box ul[visible] {
           display: block;
+        }
+        b-combo-box li {
+            list-style-type: none;
+        }
+        b-combo-box li:hover {
+            background-color: #ddd;
+        }
+        b-combo-box .b-selectable-selected {
+            background-color: #ccc;
+        }
+        b-selectable:focus {
+            outline: none;
         }
     </style>
     <template>
@@ -20,6 +36,14 @@
 
             get suggestionList() {
                 return this.querySelector('ul');
+            },
+
+            get selectable() {
+                return this.querySelector('b-selectable');
+            },
+
+            get input() {
+                return this.querySelector('input[type=text]');
             },
 
             readyCallback: function() {
@@ -50,6 +74,9 @@
                     li.innerHTML = option.text || option.value;
                     list.appendChild(li);
                 });
+                if (this.options.length > 0) {
+                    this.selectable.setAttribute('selected', 0);
+                }
             },
 
             toggleSuggestionList: function() {
@@ -59,11 +86,26 @@
 
             showSuggestionList: function() {
                 this.paintSuggestionList();
+                this.attachListEvents();
                 this.suggestionList.setAttribute('visible', '');
+                this.selectable.focus();
             },
 
             hideSuggestionList: function() {
                 this.suggestionList.removeAttribute('visible');
+            },
+
+            attachListEvents: function() {
+                this.selectable.addEventListener('b-activate', this.pickSuggestion.bind(this), false);
+            },
+
+            pickSuggestion: function(e) {
+                this.input.value = this.getItemValue(e.detail.item);
+                this.hideSuggestionList();
+            },
+
+            getItemValue: function(itemIndex) {
+                return this.querySelectorAll('li')[itemIndex].innerHTML;
             }
         });
     </script>
