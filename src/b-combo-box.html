@@ -32,7 +32,14 @@
     </template>
     <script>
         ({
-            options: [],
+            get options() {
+                var list = document.querySelector('#'+this.getAttribute('list'));
+                if (list && list.options) {
+                    CustomElements.upgrade(list); // FIXME: this is sad, but necessary...
+                    return Array.prototype.slice.call(list.options, 0); // FIXME: move the slice in datalist
+                }
+                return [];
+            },
 
             get suggestionList() {
                 return this.querySelector('ul');
@@ -47,21 +54,8 @@
             },
 
             readyCallback: function() {
-                this.listChanged(this.getAttribute('list'));
                 this.appendChild(this.template.content.cloneNode(true));
                 this.querySelector('.b-combo-box-toggle').addEventListener('click', this.toggleSuggestionList.bind(this), false);
-            },
-
-            attributeChanged: function(name, oldValue, newValue) {
-                if (name === 'list') this.listChanged(newValue);
-            },
-
-            listChanged: function(newValue) {
-                var list = document.querySelector('#'+newValue);
-                if (list) {
-                    CustomElements.upgrade(list); // FIXME: this is sad, but necessary...
-                    this.options = Array.prototype.slice.call(list.options, 0); // FIXME: move the slice in datalist
-                }
             },
 
             paintSuggestionList: function() {
