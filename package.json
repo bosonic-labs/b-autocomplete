@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "bosonic": "*",
-    "b-datalist": "0.1.*",
-    "b-selectable": "0.1.*"
+    "b-datalist": "0.2.*",
+    "b-selectable": "0.2.*"
   }
 }

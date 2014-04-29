@@ -1,4 +1,11 @@
 (function () {
+    var KEY = {
+            ENTER: 13,
+            LEFT: 37,
+            UP: 38,
+            RIGHT: 39,
+            DOWN: 40
+        };
     function normalizeTokens(tokens) {
         return tokens.filter(function (token) {
             return !!token;
@@ -78,88 +85,187 @@
             return a - b;
         }
     }
-    Bosonic.registerElement('b-combo-box', {
-        get options() {
-            var list = document.querySelector('#' + this.getAttribute('list'));
-            if (list && list.options) {
-                CustomElements.upgrade(list);
-                return Array.prototype.slice.call(list.options, 0);
+    var BComboBoxPrototype = Object.create(HTMLElement.prototype, {
+            options: {
+                enumerable: true,
+                get: function () {
+                    var list = document.querySelector('#' + this.getAttribute('list'));
+                    if (list && list.options) {
+                        CustomElements.upgrade(list);
+                        return Array.prototype.slice.call(list.options, 0);
+                    }
+                    return [];
+                }
+            },
+            index: {
+                enumerable: true,
+                get: function () {
+                    if (!this.__index) {
+                        this.__index = buildIndex(this.options);
+                    }
+                    return this.__index;
+                }
+            },
+            suggestionList: {
+                enumerable: true,
+                get: function () {
+                    return this.querySelector('ul');
+                }
+            },
+            selectable: {
+                enumerable: true,
+                get: function () {
+                    return this.querySelector('b-selectable');
+                }
+            },
+            input: {
+                enumerable: true,
+                get: function () {
+                    return this.querySelector('input[type=text]');
+                }
+            },
+            createdCallback: {
+                enumerable: true,
+                value: function () {
+                    this.appendChild(this.template.content.cloneNode(true));
+                    this.querySelector('.b-combo-box-toggle').addEventListener('click', this.toggleSuggestionList.bind(this), false);
+                    this.input.addEventListener('input', this.onInputChange.bind(this), false);
+                    this.input.addEventListener('focus', this.onInputFocus.bind(this), false);
+                    this.input.addEventListener('blur', this.onInputBlur.bind(this), false);
+                }
+            },
+            onInputFocus: {
+                enumerable: true,
+                value: function (e) {
+                    this.keydownListener = this.keydownHandler.bind(this);
+                    this.input.addEventListener('keydown', this.keydownListener, false);
+                }
+            },
+            onInputBlur: {
+                enumerable: true,
+                value: function (e) {
+                    this.input.removeEventListener('keydown', this.keydownListener, false);
+                    this.hideSuggestionList();
+                }
+            },
+            keydownHandler: {
+                enumerable: true,
+                value: function (e) {
+                    e.stopPropagation();
+                    switch (e.keyCode) {
+                    case KEY.ENTER: {
+                            this.selectable.activate();
+                            break;
+                        }
+                    case KEY.DOWN: {
+                            this.selectable.selectNextItem();
+                            break;
+                        }
+                    case KEY.UP: {
+                            this.selectable.selectPreviousItem();
+                            break;
+                        }
+                    default:
+                        return;
+                    }
+                    e.preventDefault();
+                }
+            },
+            onInputChange: {
+                enumerable: true,
+                value: function (e) {
+                    e.stopPropagation();
+                    if (!this.suggestionList.hasAttribute('visible')) {
+                        this.showSuggestionList();
+                        this.input.focus();
+                    } else {
+                        this.refreshSuggestionList();
+                    }
+                }
+            },
+            filterOptions: {
+                enumerable: true,
+                value: function () {
+                    var query = this.input.value;
+                    if (!query)
+                        return this.options;
+                    return find(query, this.index, this.options);
+                }
+            },
+            paintSuggestionList: {
+                enumerable: true,
+                value: function () {
+                    var list = this.suggestionList, options = this.filterOptions();
+                    while (list.childNodes.length > 0) {
+                        list.removeChild(list.childNodes[0]);
+                    }
+                    options.forEach(function (option) {
+                        var li = document.createElement('li');
+                        li.innerHTML = option.text || option.value;
+                        list.appendChild(li);
+                    });
+                    this.selectable.selectFirst();
+                }
+            },
+            refreshSuggestionList: {
+                enumerable: true,
+                value: function () {
+                    this.paintSuggestionList();
+                }
+            },
+            toggleSuggestionList: {
+                enumerable: true,
+                value: function () {
+                    this.suggestionList.hasAttribute('visible') ? this.hideSuggestionList() : this.showSuggestionList();
+                }
+            },
+            showSuggestionList: {
+                enumerable: true,
+                value: function () {
+                    this.paintSuggestionList();
+                    this.attachListEvents();
+                    this.suggestionList.setAttribute('visible', '');
+                }
+            },
+            hideSuggestionList: {
+                enumerable: true,
+                value: function () {
+                    if (this.suggestionList.hasAttribute('visible')) {
+                        this.suggestionList.removeAttribute('visible');
+                    }
+                }
+            },
+            attachListEvents: {
+                enumerable: true,
+                value: function () {
+                    this.selectable.addEventListener('b-activate', this.pickSuggestion.bind(this), false);
+                }
+            },
+            pickSuggestion: {
+                enumerable: true,
+                value: function (e) {
+                    this.input.value = this.getItemValue(e.detail.item);
+                    this.hideSuggestionList();
+                }
+            },
+            getItemValue: {
+                enumerable: true,
+                value: function (itemIndex) {
+                    return this.querySelectorAll('li')[itemIndex].innerHTML;
+                }
             }
-            return [];
-        },
-        get index() {
-            if (!this.__index) {
-                this.__index = buildIndex(this.options);
+        });
+    window.BComboBox = document.registerElement('b-combo-box', { prototype: BComboBoxPrototype });
+    Object.defineProperty(BComboBoxPrototype, 'template', {
+        get: function () {
+            var fragment = document.createDocumentFragment();
+            var div = fragment.appendChild(document.createElement('div'));
+            div.innerHTML = ' <input type="text" value=""> <a class="b-combo-box-toggle">show</a> <b-selectable target="li"> <ul></ul> </b-selectable> ';
+            while (child = div.firstChild) {
+                fragment.insertBefore(child, div);
             }
-            return this.__index;
-        },
-        get suggestionList() {
-            return this.querySelector('ul');
-        },
-        get selectable() {
-            return this.querySelector('b-selectable');
-        },
-        get input() {
-            return this.querySelector('input[type=text]');
-        },
-        readyCallback: function () {
-            this.appendChild(this.template.content.cloneNode(true));
-            this.querySelector('.b-combo-box-toggle').addEventListener('click', this.toggleSuggestionList.bind(this), false);
-            this.input.addEventListener('input', this.onInputChange.bind(this), false);
-        },
-        onInputChange: function (e) {
-            e.stopPropagation();
-            if (!this.suggestionList.hasAttribute('visible')) {
-                this.showSuggestionList();
-                this.input.focus();
-            } else {
-                this.refreshSuggestionList();
-            }
-        },
-        filterOptions: function () {
-            var query = this.input.value;
-            if (!query)
-                return this.options;
-            return find(query, this.index, this.options);
-        },
-        paintSuggestionList: function () {
-            var list = this.suggestionList, options = this.filterOptions();
-            while (list.childNodes.length > 0) {
-                list.removeChild(list.childNodes[0]);
-            }
-            options.forEach(function (option) {
-                var li = document.createElement('li');
-                li.innerHTML = option.text || option.value;
-                list.appendChild(li);
-            });
-            if (options.length > 0) {
-                this.selectable.setAttribute('selected', 0);
-            }
-        },
-        refreshSuggestionList: function () {
-            this.paintSuggestionList();
-        },
-        toggleSuggestionList: function () {
-            this.suggestionList.hasAttribute('visible') ? this.hideSuggestionList() : this.showSuggestionList();
-        },
-        showSuggestionList: function () {
-            this.paintSuggestionList();
-            this.attachListEvents();
-            this.suggestionList.setAttribute('visible', '');
-        },
-        hideSuggestionList: function () {
-            this.suggestionList.removeAttribute('visible');
-        },
-        attachListEvents: function () {
-            this.selectable.addEventListener('b-activate', this.pickSuggestion.bind(this), false);
-        },
-        pickSuggestion: function (e) {
-            this.input.value = this.getItemValue(e.detail.item);
-            this.hideSuggestionList();
-        },
-        getItemValue: function (itemIndex) {
-            return this.querySelectorAll('li')[itemIndex].innerHTML;
-        },
-        template: ' <input type="text" value=""> <a class="b-combo-box-toggle">show</a> <b-selectable target="li"> <ul></ul> </b-selectable> '
+            fragment.removeChild(div);
+            return { content: fragment };
+        }
     });
 }());

@@ -31,6 +31,14 @@
         </b-selectable>
     </template>
     <script>
+        var KEY = {
+            ENTER: 13,
+            LEFT: 37,
+            UP: 38,
+            RIGHT: 39,
+            DOWN: 40,
+        };
+
         function normalizeTokens(tokens) {
             return tokens.filter(function(token) { return !!token; })
                          .map(function(token) { return token.toLowerCase(); });
@@ -152,10 +160,43 @@
                 return this.querySelector('input[type=text]');
             },
 
-            readyCallback: function() {
+            createdCallback: function() {
                 this.appendChild(this.template.content.cloneNode(true));
                 this.querySelector('.b-combo-box-toggle').addEventListener('click', this.toggleSuggestionList.bind(this), false);
                 this.input.addEventListener('input', this.onInputChange.bind(this), false);
+                this.input.addEventListener('focus', this.onInputFocus.bind(this), false);
+                this.input.addEventListener('blur', this.onInputBlur.bind(this), false);
+            },
+
+            onInputFocus: function(e) {
+                this.keydownListener = this.keydownHandler.bind(this);
+                this.input.addEventListener('keydown', this.keydownListener, false);
+            },
+
+            onInputBlur: function(e) {
+                this.input.removeEventListener('keydown', this.keydownListener, false);
+                this.hideSuggestionList();
+            },
+
+            keydownHandler: function(e) {
+                e.stopPropagation();
+                switch(e.keyCode) {
+                    case KEY.ENTER: {
+                        this.selectable.activate();
+                        break;
+                    }
+                    case KEY.DOWN: {
+                        this.selectable.selectNextItem();
+                        break;
+                    }
+                    case KEY.UP: {
+                        this.selectable.selectPreviousItem();
+                        break;
+                    }
+                    default:
+                        return;
+                }
+                e.preventDefault();
             },
 
             onInputChange: function(e) {
@@ -186,9 +227,7 @@
                     li.innerHTML = option.text || option.value;
                     list.appendChild(li);
                 });
-                if (options.length > 0) {
-                    this.selectable.setAttribute('selected', 0);
-                }
+                this.selectable.selectFirst();
             },
 
             refreshSuggestionList: function() {
@@ -207,7 +246,9 @@
             },
 
             hideSuggestionList: function() {
-                this.suggestionList.removeAttribute('visible');
+                if (this.suggestionList.hasAttribute('visible')) {
+                    this.suggestionList.removeAttribute('visible');
+                }
             },
 
             attachListEvents: function() {
