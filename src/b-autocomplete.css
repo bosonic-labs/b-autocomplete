@@ -7,8 +7,6 @@ b-autocomplete input, b-combo-box input {
     border: 1px solid #acacac;
     padding: 2px;
     margin: 0;
-}
-b-autocomplete input {
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
@@ -45,15 +43,4 @@ b-autocomplete li:hover, b-combo-box li:hover {
 }
 b-autocomplete .b-selectable-selected, b-combo-box .b-selectable-selected {
     background-color: #ccc;
-}
-
-b-combo-box {
-    display: table;
-    table-layout: fixed;
-}
-b-combo-box input {
-    -moz-border-radius: 3px 0 0 3px;
-    -webkit-border-radius: 3px 0 0 3px;
-    border-radius: 3px 0 0 3px;
-    border-right: 0;
 }

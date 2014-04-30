@@ -1,12 +1,16 @@
 <element name="b-combo-box" extends="b-autocomplete">
     <style>
+        input {
+            padding-right: 15px;
+        }
         .b-combo-box-toggle {
-            border: 1px solid #acacac;
-            display: inline-block;
-            -moz-border-radius: 0 3px 3px 0;
-            -webkit-border-radius: 0;
-            border-radius: 0 3px 3px 0;
-            padding: 0 5px 1px 5px;
+            position: absolute;
+            padding: 2px 5px;
+            top: 0;
+            right: 0;
+        }
+        .b-combo-box-toggle:hover {
+            cursor: pointer;
         }
         .b-combo-box-toggle:before { 
             content:'\25BE'; 

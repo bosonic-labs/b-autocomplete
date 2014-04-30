@@ -7,8 +7,6 @@ b-autocomplete input, b-combo-box input {
     border: 1px solid #acacac;
     padding: 2px;
     margin: 0;
-}
-b-autocomplete input {
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     border-radius: 3px;
@@ -47,24 +45,19 @@ b-autocomplete .b-selectable-selected, b-combo-box .b-selectable-selected {
     background-color: #ccc;
 }
 
-b-combo-box {
-    display: table;
-    table-layout: fixed;
-}
 b-combo-box input {
-    -moz-border-radius: 3px 0 0 3px;
-    -webkit-border-radius: 3px 0 0 3px;
-    border-radius: 3px 0 0 3px;
-    border-right: 0;
+  padding-right: 15px;
 }
 
 .b-combo-box-toggle {
-  border: 1px solid #acacac;
-  display: inline-block;
-  -moz-border-radius: 0 3px 3px 0;
-  -webkit-border-radius: 0;
-  border-radius: 0 3px 3px 0;
-  padding: 0 5px 1px 5px;
+  position: absolute;
+  padding: 2px 5px;
+  top: 0;
+  right: 0;
+}
+
+.b-combo-box-toggle:hover {
+  cursor: pointer;
 }
 
 .b-combo-box-toggle:before {
