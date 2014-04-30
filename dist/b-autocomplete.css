@@ -1,0 +1,72 @@
+b-autocomplete, b-combo-box {
+    position: relative;
+    display: inline-block;
+    margin: 2px;
+}
+b-autocomplete input, b-combo-box input {
+    border: 1px solid #acacac;
+    padding: 2px;
+    margin: 0;
+}
+b-autocomplete input {
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+}
+b-autocomplete b-selectable, b-combo-box b-selectable {
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    left: 0px;
+    z-index: 100;
+    display: none;
+    right: auto;
+}
+b-autocomplete b-selectable[visible], b-combo-box b-selectable[visible] {
+    display: block;
+}
+b-autocomplete b-selectable:focus, b-combo-box b-selectable:focus {
+    outline: none;
+}
+b-autocomplete ul, b-combo-box ul {
+    max-width: 200px;
+    border: 1px solid #acacac;
+    margin: 0;
+    padding: 0;
+    max-height: 150px;
+    overflow: auto;
+    background-color: #fff;
+}
+b-autocomplete li, b-combo-box li {
+    list-style-type: none;
+}
+b-autocomplete li:hover, b-combo-box li:hover {
+    background-color: #ddd;
+}
+b-autocomplete .b-selectable-selected, b-combo-box .b-selectable-selected {
+    background-color: #ccc;
+}
+
+b-combo-box {
+    display: table;
+    table-layout: fixed;
+}
+b-combo-box input {
+    -moz-border-radius: 3px 0 0 3px;
+    -webkit-border-radius: 3px 0 0 3px;
+    border-radius: 3px 0 0 3px;
+    border-right: 0;
+}
+
+.b-combo-box-toggle {
+  border: 1px solid #acacac;
+  display: inline-block;
+  -moz-border-radius: 0 3px 3px 0;
+  -webkit-border-radius: 0;
+  border-radius: 0 3px 3px 0;
+  padding: 0 5px 1px 5px;
+}
+
+.b-combo-box-toggle:before {
+  content: '\25BE';
+}

@@ -85,7 +85,7 @@
             return a - b;
         }
     }
-    var BComboBoxPrototype = Object.create(HTMLElement.prototype, {
+    var BAutocompletePrototype = Object.create(HTMLElement.prototype, {
             options: {
                 enumerable: true,
                 get: function () {
@@ -128,10 +128,18 @@
                 enumerable: true,
                 value: function () {
                     this.appendChild(this.template.content.cloneNode(true));
-                    this.querySelector('.b-combo-box-toggle').addEventListener('click', this.toggleSuggestionList.bind(this), false);
                     this.input.addEventListener('input', this.onInputChange.bind(this), false);
                     this.input.addEventListener('focus', this.onInputFocus.bind(this), false);
                     this.input.addEventListener('blur', this.onInputBlur.bind(this), false);
+                    this.selectable.addEventListener('mousedown', this.onSuggestionPick.bind(this), false);
+                    this.selectable.addEventListener('b-activate', this.pickSuggestion.bind(this), false);
+                }
+            },
+            handleAria: {
+                enumerable: true,
+                value: function () {
+                    this.setAttribute('role', 'combobox');
+                    this.setAttribute('aria-autocomplete', 'list');
                 }
             },
             onInputFocus: {
@@ -144,8 +152,19 @@
             onInputBlur: {
                 enumerable: true,
                 value: function (e) {
+                    if (this.cancelBlur) {
+                        this.cancelBlur = false;
+                        return;
+                    }
                     this.input.removeEventListener('keydown', this.keydownListener, false);
                     this.hideSuggestionList();
+                }
+            },
+            onSuggestionPick: {
+                enumerable: true,
+                value: function (e) {
+                    e.preventDefault();
+                    this.cancelBlur = true;
                 }
             },
             keydownHandler: {
@@ -158,11 +177,19 @@
                             break;
                         }
                     case KEY.DOWN: {
-                            this.selectable.selectNextItem();
+                            if (!this.areSuggestionsVisible()) {
+                                this.showSuggestionList();
+                            } else {
+                                this.selectable.selectNextItem();
+                            }
                             break;
                         }
                     case KEY.UP: {
-                            this.selectable.selectPreviousItem();
+                            if (!this.areSuggestionsVisible()) {
+                                this.showSuggestionList();
+                            } else {
+                                this.selectable.selectPreviousItem();
+                            }
                             break;
                         }
                     default:
@@ -175,12 +202,13 @@
                 enumerable: true,
                 value: function (e) {
                     e.stopPropagation();
-                    if (!this.suggestionList.hasAttribute('visible')) {
+                    if (!this.areSuggestionsVisible()) {
                         this.showSuggestionList();
                         this.input.focus();
                     } else {
                         this.refreshSuggestionList();
                     }
+                    this.selectFirstSuggestion();
                 }
             },
             filterOptions: {
@@ -204,7 +232,6 @@
                         li.innerHTML = option.text || option.value;
                         list.appendChild(li);
                     });
-                    this.selectable.selectFirst();
                 }
             },
             refreshSuggestionList: {
@@ -216,34 +243,41 @@
             toggleSuggestionList: {
                 enumerable: true,
                 value: function () {
-                    this.suggestionList.hasAttribute('visible') ? this.hideSuggestionList() : this.showSuggestionList();
+                    this.areSuggestionsVisible() ? this.hideSuggestionList() : this.showSuggestionList();
+                    this.input.focus();
                 }
             },
             showSuggestionList: {
                 enumerable: true,
                 value: function () {
                     this.paintSuggestionList();
-                    this.attachListEvents();
-                    this.suggestionList.setAttribute('visible', '');
+                    this.selectable.setAttribute('visible', '');
                 }
             },
             hideSuggestionList: {
                 enumerable: true,
                 value: function () {
-                    if (this.suggestionList.hasAttribute('visible')) {
-                        this.suggestionList.removeAttribute('visible');
+                    if (this.areSuggestionsVisible()) {
+                        this.selectable.removeAttribute('visible');
                     }
                 }
             },
-            attachListEvents: {
+            selectFirstSuggestion: {
                 enumerable: true,
                 value: function () {
-                    this.selectable.addEventListener('b-activate', this.pickSuggestion.bind(this), false);
+                    this.selectable.selectFirst();
+                }
+            },
+            areSuggestionsVisible: {
+                enumerable: true,
+                value: function () {
+                    return this.selectable.hasAttribute('visible');
                 }
             },
             pickSuggestion: {
                 enumerable: true,
                 value: function (e) {
+                    this.cancelBlur = false;
                     this.input.value = this.getItemValue(e.detail.item);
                     this.hideSuggestionList();
                 }
@@ -255,12 +289,48 @@
                 }
             }
         });
+    window.BAutocomplete = document.registerElement('b-autocomplete', { prototype: BAutocompletePrototype });
+    Object.defineProperty(BAutocompletePrototype, 'template', {
+        get: function () {
+            var fragment = document.createDocumentFragment();
+            var div = fragment.appendChild(document.createElement('div'));
+            div.innerHTML = ' <input type="text" autocomplete="off" role="textbox" value=""> <b-selectable target="li"> <ul></ul> </b-selectable> ';
+            while (child = div.firstChild) {
+                fragment.insertBefore(child, div);
+            }
+            fragment.removeChild(div);
+            return { content: fragment };
+        }
+    });
+}());
+(function () {
+    var BComboBoxPrototype = Object.create(BAutocomplete.prototype, {
+            listToggle: {
+                enumerable: true,
+                get: function () {
+                    return this.querySelector('.b-combo-box-toggle');
+                }
+            },
+            createdCallback: {
+                enumerable: true,
+                value: function () {
+                    this._super.createdCallback.call(this);
+                    this.listToggle.addEventListener('click', this.toggleSuggestionList.bind(this), false);
+                }
+            }
+        });
     window.BComboBox = document.registerElement('b-combo-box', { prototype: BComboBoxPrototype });
+    Object.defineProperty(BComboBox.prototype, '_super', {
+        enumerable: false,
+        writable: false,
+        configurable: false,
+        value: BAutocomplete.prototype
+    });
     Object.defineProperty(BComboBoxPrototype, 'template', {
         get: function () {
             var fragment = document.createDocumentFragment();
             var div = fragment.appendChild(document.createElement('div'));
-            div.innerHTML = ' <input type="text" value=""> <a class="b-combo-box-toggle">show</a> <b-selectable target="li"> <ul></ul> </b-selectable> ';
+            div.innerHTML = ' <input type="text" autocomplete="off" role="textbox" value=""> <a class="b-combo-box-toggle"></a> <b-selectable target="li"> <ul></ul> </b-selectable> ';
             while (child = div.firstChild) {
                 fragment.insertBefore(child, div);
             }

@@ -11,8 +11,8 @@ module.exports = function(grunt) {
     bosonic: {
       components: {
         src: ['src/*.html'],
-        css: 'dist/b-combo-box.css',
-        js:  'dist/b-combo-box.js'
+        css: 'dist/b-autocomplete.css',
+        js:  'dist/b-autocomplete.js'
       }
     },
 
@@ -24,7 +24,7 @@ module.exports = function(grunt) {
 
     watch: {
       source: {
-        files: ['src/*.html'],
+        files: ['src/*.html', 'src/*.css'],
         tasks: ['clean', 'bosonic', 'copy:dist']
       }
     },
