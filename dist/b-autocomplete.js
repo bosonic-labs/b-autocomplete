@@ -223,6 +223,7 @@
             paintSuggestionList: {
                 enumerable: true,
                 value: function () {
+                    this.selectable.unselect();
                     var list = this.suggestionList, options = this.filterOptions();
                     while (list.childNodes.length > 0) {
                         list.removeChild(list.childNodes[0]);
@@ -242,7 +243,10 @@
             },
             toggleSuggestionList: {
                 enumerable: true,
-                value: function () {
+                value: function (e) {
+                    if (e) {
+                        e.stopPropagation();
+                    }
                     this.areSuggestionsVisible() ? this.hideSuggestionList() : this.showSuggestionList();
                     this.input.focus();
                 }

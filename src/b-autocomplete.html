@@ -218,6 +218,7 @@
             },
 
             paintSuggestionList: function() {
+                this.selectable.unselect();
                 var list = this.suggestionList,
                     options = this.filterOptions();
                 while (list.childNodes.length > 0) {
@@ -234,7 +235,10 @@
                 this.paintSuggestionList();
             },
 
-            toggleSuggestionList: function() {
+            toggleSuggestionList: function(e) {
+                if (e) {
+                    e.stopPropagation();
+                }
                 this.areSuggestionsVisible()
                     ? this.hideSuggestionList() : this.showSuggestionList();
                 this.input.focus();
