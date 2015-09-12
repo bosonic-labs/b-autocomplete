@@ -1,7 +1,7 @@
 {
   "name": "b-autocomplete",
-  "version": "0.1.1",
-  "description": "A Bosonic autocomplete element.",
+  "version": "0.1.2",
+  "description": "b-autocomplete has been deprecated. Use bosonic-data-elements instead.",
   "main": "Gruntfile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,11 +17,11 @@
   },
   "devDependencies": {
     "bosonic-test-tools": "*",
-    "grunt-bosonic": ">=0.4.0"
+    "grunt-bosonic": "~0.4.0"
   },
   "dependencies": {
-    "bosonic": ">=0.4.0",
-    "b-datalist": "0.2.*",
-    "b-selectable": "0.2.*"
+    "bosonic": "~0.4.0",
+    "b-datalist": "~0.2.0",
+    "b-selectable": "~0.2.0"
   }
 }
